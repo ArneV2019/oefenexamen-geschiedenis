@@ -9,7 +9,7 @@ client = anthropic.Anthropic(api_key=API_KEY)
 # 2. De opmaak van de webpagina
 st.set_page_config(page_title="Oefenexamen Geschiedenis", page_icon="🏛️")
 st.title("Oefenexamen geschiedenis")
-st.markdown("Welkom bij de formatieve evaluatie. De leerkracht is klaar wanneer jij dat bent!")
+st.markdown("Welkom bij dit oefenexamen geschiedenis. Als jij er klaar voor bent, kunnen we beginnen. Succes!")
 
 # 3. Jouw instructies voor de AI (System Prompt)
 # Kopieer hier de tekst van je cursus en de rubric tussen de juiste tags
