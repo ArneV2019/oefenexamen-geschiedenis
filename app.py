@@ -1,12 +1,14 @@
 import streamlit as st
-import anthropic
+from openai import OpenAI
 
 # 1. Configuratie van de API via Streamlit Secrets
-API_KEY = st.secrets["ANTHROPIC_API_KEY"]
-client = anthropic.Anthropic(api_key=API_KEY)
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=st.secrets["OPENROUTER_API_KEY"],
+)
 
 # 2. Pagina instellingen en UI
-st.set_page_config(page_title="Oefenexamen Geschiedenis", page_icon="🏛️")
+st.set_page_config(page_title="Oefenexamen geschiedenis")
 st.title("Oefenexamen geschiedenis - juni 2026")
 st.markdown("Welkom bij dit oefenexamen geschiedenis. Heb je grondig gestudeerd? Dan kan je deze tool gebruiken als test. Hou er rekening mee dat dit een automatische tool is die fouten kan maken. Succes!")
 
@@ -82,28 +84,34 @@ Ken per domein een niveau toe (Niveau 1 t/m 4) en geef één concrete tip voor h
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 6. Bestaande berichten op het scherm tonen
+# 6. Bestaande berichten tonen
 for msg in st.session_state.messages:
     if msg["content"] != "Start het examen volgens de instructies.":
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-# 7. Startknop (zorgt dat de bot het gesprek opent)
+# 7. Startknop
 if len(st.session_state.messages) == 0:
     if st.button("Start het proefexamen"):
         start_bericht = "Start het examen volgens de instructies."
         st.session_state.messages.append({"role": "user", "content": start_bericht})
         
-        with st.spinner("Ik bekijk even mijn notities..."):
-            response = client.messages.create(
-                model="claude-haiku-4-5", 
-                max_tokens=1000,
-                system=system_prompt,
-                messages=st.session_state.messages
-            )
-            bot_reply = response.content[0].text
-            st.session_state.messages.append({"role": "assistant", "content": bot_reply})
-            st.rerun()
+        with st.spinner("De leerkracht bekijkt zijn notities..."):
+            try:
+                # API Call naar OpenRouter (met gratis Llama 3 model)
+                messages_for_api = [{"role": "system", "content": system_prompt}] + st.session_state.messages
+                
+                response = client.chat.completions.create(
+                    model="meta-llama/llama-3-8b-instruct:free",
+                    messages=messages_for_api,
+                    max_tokens=1000,
+                    temperature=0.7
+                )
+                bot_reply = response.choices[0].message.content
+                st.session_state.messages.append({"role": "assistant", "content": bot_reply})
+                st.rerun()
+            except Exception as e:
+                st.error(f"Fout bij het opstarten: {e}")
 
 # 8. Inputveld voor de leerling
 if prompt := st.chat_input("Typ hier je antwoord..."):
@@ -115,15 +123,17 @@ if prompt := st.chat_input("Typ hier je antwoord..."):
 
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
-        with st.spinner("Ik luister en denk na..."):
+        with st.spinner("De leerkracht luistert en denkt na..."):
             try:
-                response = client.messages.create(
-                    model="claude-haiku-4-5",
+                messages_for_api = [{"role": "system", "content": system_prompt}] + st.session_state.messages
+                
+                response = client.chat.completions.create(
+                    model="meta-llama/llama-3-8b-instruct:free",
+                    messages=messages_for_api,
                     max_tokens=1000,
-                    system=system_prompt,
-                    messages=st.session_state.messages
+                    temperature=0.7
                 )
-                bot_reply = response.content[0].text
+                bot_reply = response.choices[0].message.content
                 message_placeholder.markdown(bot_reply)
                 
                 st.session_state.messages.append({"role": "assistant", "content": bot_reply})
