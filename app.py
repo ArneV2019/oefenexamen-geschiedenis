@@ -102,7 +102,7 @@ if len(st.session_state.messages) == 0:
                 messages_for_api = [{"role": "system", "content": system_prompt}] + st.session_state.messages
                 
                 response = client.chat.completions.create(
-                    model="meta-llama/llama-3-8b-instruct:free",
+                    model="meta-llama/llama-3.1-8b-instruct:free",
                     messages=messages_for_api,
                     max_tokens=1000,
                     temperature=0.7
@@ -128,7 +128,7 @@ if prompt := st.chat_input("Typ hier je antwoord..."):
                 messages_for_api = [{"role": "system", "content": system_prompt}] + st.session_state.messages
                 
                 response = client.chat.completions.create(
-                    model="meta-llama/llama-3-8b-instruct:free",
+                    model="meta-llama/llama-3.1-8b-instruct:free",
                     messages=messages_for_api,
                     max_tokens=1000,
                     temperature=0.7
