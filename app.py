@@ -7,8 +7,8 @@ client = anthropic.Anthropic(api_key=API_KEY)
 
 # 2. Pagina instellingen en UI
 st.set_page_config(page_title="Oefenexamen Geschiedenis", page_icon="🏛️")
-st.title("🏛️ Mondeling Oefenexamen Geschiedenis")
-st.markdown("Welkom bij de formatieve evaluatie. De leerkracht is klaar wanneer jij dat bent!")
+st.title("Oefenexamen geschiedenis - juni 2026")
+st.markdown("Welkom bij dit oefenexamen geschiedenis. Heb je grondig gestudeerd? Dan kan je deze tool gebruiken als test. Hou er rekening mee dat dit een automatische tool is die fouten kan maken. Succes!")
 
 # 3. Functie om de tekstbestanden veilig in te lezen
 # (Dit MOET boven de system_prompt staan)
@@ -94,7 +94,7 @@ if len(st.session_state.messages) == 0:
         start_bericht = "Start het examen volgens de instructies."
         st.session_state.messages.append({"role": "user", "content": start_bericht})
         
-        with st.spinner("De leerkracht bekijkt zijn notities..."):
+        with st.spinner("Ik bekijk even mijn notities..."):
             response = client.messages.create(
                 model="claude-3-5-sonnet-20240620", 
                 max_tokens=1000,
@@ -115,7 +115,7 @@ if prompt := st.chat_input("Typ hier je antwoord..."):
 
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
-        with st.spinner("De leerkracht luistert en denkt na..."):
+        with st.spinner("Ik luister en denk na..."):
             try:
                 response = client.messages.create(
                     model="claude-3-5-sonnet-20240620",
