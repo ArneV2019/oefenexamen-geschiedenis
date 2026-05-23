@@ -96,7 +96,7 @@ if len(st.session_state.messages) == 0:
         
         with st.spinner("Ik bekijk even mijn notities..."):
             response = client.messages.create(
-                model="claude-sonnet-4-6", 
+                model="claude-haiku-4-5", 
                 max_tokens=1000,
                 system=system_prompt,
                 messages=st.session_state.messages
@@ -118,7 +118,7 @@ if prompt := st.chat_input("Typ hier je antwoord..."):
         with st.spinner("Ik luister en denk na..."):
             try:
                 response = client.messages.create(
-                    model="claude-sonnet-4-6",
+                    model="claude-haiku-4-5",
                     max_tokens=1000,
                     system=system_prompt,
                     messages=st.session_state.messages
