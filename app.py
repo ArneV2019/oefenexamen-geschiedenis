@@ -1,11 +1,9 @@
 import streamlit as st
-from openai import OpenAI
+import google.generativeai as genai
 
 # 1. Configuratie van de API via Streamlit Secrets
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=st.secrets["OPENROUTER_API_KEY"],
-)
+API_KEY = st.secrets["GEMINI_API_KEY"]
+genai.configure(api_key=API_KEY)
 
 # 2. Pagina instellingen en UI
 st.set_page_config(page_title="Oefenexamen geschiedenis")
@@ -80,17 +78,31 @@ Ken per domein een niveau toe (Niveau 1 t/m 4) en geef één concrete tip voor h
 - geef telkens aan dat de score indicatief is en dat de werkelijke score op het examen kan afwijken!
 """
 
-# 5. Chatgeschiedenis initialiseren
+# 5. Gemini Model Initialiseren
+model = genai.GenerativeModel(
+    model_name="gemini-1.5-flash",
+    system_instruction=system_prompt
+)
+
+# 6. Chatgeschiedenis initialiseren
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 6. Bestaande berichten tonen
+# 7. Bestaande berichten op het scherm tonen
 for msg in st.session_state.messages:
     if msg["content"] != "Start het examen volgens de instructies.":
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-# 7. Startknop
+# Functie om de Streamlit geschiedenis om te zetten naar het Gemini formaat
+def get_gemini_history():
+    history = []
+    for msg in st.session_state.messages:
+        role = "user" if msg["role"] == "user" else "model"
+        history.append({"role": role, "parts": [msg["content"]]})
+    return history
+
+# 8. Startknop (zorgt dat de bot het gesprek opent)
 if len(st.session_state.messages) == 0:
     if st.button("Start het proefexamen"):
         start_bericht = "Start het examen volgens de instructies."
@@ -98,22 +110,16 @@ if len(st.session_state.messages) == 0:
         
         with st.spinner("De leerkracht bekijkt zijn notities..."):
             try:
-                # API Call naar OpenRouter (met gratis Llama 3 model)
-                messages_for_api = [{"role": "system", "content": system_prompt}] + st.session_state.messages
+                gemini_history = get_gemini_history()
+                response = model.generate_content(gemini_history)
+                bot_reply = response.text
                 
-                response = client.chat.completions.create(
-                    model="google/gemma-2-9b-it:free",
-                    messages=messages_for_api,
-                    max_tokens=1000,
-                    temperature=0.7
-                )
-                bot_reply = response.choices[0].message.content
                 st.session_state.messages.append({"role": "assistant", "content": bot_reply})
                 st.rerun()
             except Exception as e:
                 st.error(f"Fout bij het opstarten: {e}")
 
-# 8. Inputveld voor de leerling
+# 9. Inputveld voor de leerling
 if prompt := st.chat_input("Typ hier je antwoord..."):
     
     with st.chat_message("user"):
@@ -125,17 +131,11 @@ if prompt := st.chat_input("Typ hier je antwoord..."):
         message_placeholder = st.empty()
         with st.spinner("De leerkracht luistert en denkt na..."):
             try:
-                messages_for_api = [{"role": "system", "content": system_prompt}] + st.session_state.messages
+                gemini_history = get_gemini_history()
+                response = model.generate_content(gemini_history)
+                bot_reply = response.text
                 
-                response = client.chat.completions.create(
-                    model="google/gemma-2-9b-it:free",
-                    messages=messages_for_api,
-                    max_tokens=1000,
-                    temperature=0.7
-                )
-                bot_reply = response.choices[0].message.content
                 message_placeholder.markdown(bot_reply)
-                
                 st.session_state.messages.append({"role": "assistant", "content": bot_reply})
             except Exception as e:
                 st.error(f"Er ging iets mis met de verbinding: {e}")
