@@ -108,7 +108,7 @@ if len(st.session_state.messages) == 0:
         start_bericht = "Start het examen volgens de instructies."
         st.session_state.messages.append({"role": "user", "content": start_bericht})
         
-        with st.spinner("De leerkracht bekijkt zijn notities..."):
+        with st.spinner("Ik bekijk eventjes de cursus die mr. Vinck maakte. Even geduld..."):
             try:
                 gemini_history = get_gemini_history()
                 response = model.generate_content(gemini_history)
@@ -129,7 +129,7 @@ if prompt := st.chat_input("Typ hier je antwoord..."):
 
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
-        with st.spinner("De leerkracht luistert en denkt na..."):
+        with st.spinner("Ik luister en denk na..."):
             try:
                 gemini_history = get_gemini_history()
                 response = model.generate_content(gemini_history)
