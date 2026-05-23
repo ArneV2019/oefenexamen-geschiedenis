@@ -80,7 +80,7 @@ Ken per domein een niveau toe (Niveau 1 t/m 4) en geef één concrete tip voor h
 
 # 5. Gemini Model Initialiseren
 model = genai.GenerativeModel(
-    model_name="gemini-3.1-flash-lite", # Je kan hier ook "gemini-pro" invullen als veilig alternatief
+    model_name="gemini-2.5-flash-lite", # Je kan hier ook "gemini-pro" invullen als veilig alternatief
     system_instruction=system_prompt
 )
 
